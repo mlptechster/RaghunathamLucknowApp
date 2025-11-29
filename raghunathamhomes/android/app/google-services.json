@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "733423445740",
+    "project_id": "raghunathamlucknow",
+    "storage_bucket": "raghunathamlucknow.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:733423445740:android:539497db1ce3e6f953e7c9",
+        "android_client_info": {
+          "package_name": "com.raghunathamlucknow.raghunathamhomes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcS-DGQXKz4lPwsG2F4LLc8xQ9gZyKG1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
