@@ -1,6 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:raghunathamhomes/constants/app_colors.dart';
+import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_event.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -122,6 +125,10 @@ class HomeDrawer extends StatelessWidget {
                   DrawerItem(title: "Lease a Property", icon: Icons.real_estate_agent_outlined, onTap: () {  },),
                   DrawerItem(title: "Rent a Banquet", icon: Icons.celebration_outlined, onTap: () {  },),
                   DrawerItem(title: "PGs & Hotel Rooms", icon: Icons.hotel_outlined, onTap: () {  },),
+                  DrawerItem(title: "LogOut",icon: Icons.logout_outlined,onTap:(){
+                    context.read<AuthBloc>().add(AuthSignOutRequested());
+                    Navigator.pop(context);
+                  })
                 ],
               ),
             ),
