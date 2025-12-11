@@ -1,5 +1,7 @@
 // features/authentication/presentation/pages/auth_screen.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:raghunathamhomes/constants/app_colors.dart'; 
@@ -385,47 +387,105 @@ void _showForgotPasswordDialog(BuildContext context) {
 }
 
 
-// DUMMY VERIFICATION SCREEN
-class VerificationScreen extends StatelessWidget {
+
+class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
 
   @override
+  State<VerificationScreen> createState() => _VerificationScreenState();
+}
+
+class _VerificationScreenState extends State<VerificationScreen> {
+  Timer? _timer;
+  
+  // ... (initState and dispose remain the same)
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      context.read<AuthBloc>().add(AuthCheckEmailVerificationRequested());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+  // ...
+
+  @override
   Widget build(BuildContext context) {
-    final bloc = context.read<AuthBloc>();
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Verify Email'),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Please check your inbox!",
-                style: goldHeadingStyle.copyWith(fontSize: 24),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              _buildAuthButton(
-                context,
-                text: "Resend Verification Email",
-                onPressed: () {
-                  bloc.add(AuthResendVerificationEmailRequested());
-                },
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  bloc.add(AuthSignOutRequested()); 
-                },
-                child: Text('Return to Login', style: bodyText.copyWith(color: AppColors.primary)),
-              ),
-            ],
+    //  Add a BlocListener here to catch the authenticated status
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // Handle success messages if resending email
+        if (state.successMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.successMessage!),
+              backgroundColor: AppColors.accentGoldDark,
+            ),
+          );
+        }
+        
+        // Navigation to Home Page once verified
+        if (state.status == AuthStatus.authenticated) {
+           // IMPORTANT: Cancel the timer before navigating away
+           _timer?.cancel();
+           
+           // Navigate to the HomePage
+           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
+        }
+
+        // Handle Sign Out from VerificationScreen (Return to Login)
+        if (state.status == AuthStatus.unauthenticated) {
+            _timer?.cancel();
+            // Go back to the initial AuthScreen (Login/Signup)
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AuthScreen()));
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          // ... (AppBar content)
+        ),
+        body: Center(
+          // ... (Body content remains the same)
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Please check your inbox!",
+                  style: goldHeadingStyle.copyWith(fontSize: 24),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  context.read<AuthBloc>().state.user?.email ?? 'A verification link has been sent to your email address.',
+                  style: bodyText.copyWith(color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+                
+                _buildAuthButton(
+                  context,
+                  text: "Resend Verification Email",
+                  onPressed: () {
+                    context.read<AuthBloc>().add(AuthResendVerificationEmailRequested());
+                  },
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                   onPressed: () {
+                     context.read<AuthBloc>().add(AuthSignOutRequested()); 
+                   },
+                   child: Text('Return to Login', style: bodyText.copyWith(color: AppColors.textMuted)),
+                ),
+              ],
+            ),
           ),
         ),
       ),

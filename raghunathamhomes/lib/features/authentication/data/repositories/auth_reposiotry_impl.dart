@@ -158,7 +158,7 @@ class FirebaseAuthRepository implements AuthRepository {
       final refreshed = _auth.currentUser;
       if (refreshed != null && !refreshed.emailVerified) {
         print('❌ Email not verified — blocking auto-login.');
-        await _auth.signOut();
+        //await _auth.signOut();
         return null;
       }
 

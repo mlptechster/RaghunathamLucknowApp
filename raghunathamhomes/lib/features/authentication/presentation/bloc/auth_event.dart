@@ -38,3 +38,5 @@ class AuthResendVerificationEmailRequested extends AuthEvent {}
 
 // For checking session on app startup
 class AuthCheckStatusRequested extends AuthEvent {}
+// for checking email verification
+class AuthCheckEmailVerificationRequested extends AuthEvent {}

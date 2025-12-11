@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:raghunathamhomes/constants/app_colors.dart';
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_event.dart';
+import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_state.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -44,33 +45,61 @@ class HomeDrawer extends StatelessWidget {
                   // -------------------------
                   // 1. Profile Header
                   // -------------------------
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: AppColors.accentGold,
-                        child: const Icon(Icons.person, color: Colors.white),
-                      ),
-                      const SizedBox(width: 14),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      // ⭐ DIAGNOSTIC PRINTS to see the live state
+                      print('--- Drawer State Check ---');
+                      print('Auth Status: ${state.status}');
+                      print('User Object is Null: ${state.user == null}');
+                      
+                      // Safely retrieve the user's name
+                      final userName = state.user?.fullName ?? 'Guest User';
+                      final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+
+                      if (state.user != null) {
+                         print('User FullName retrieved: $userName');
+                         print('User Email retrieved: ${state.user!.email}');
+                      }
+                      print('--------------------------');
+
+                      return Row(
                         children: [
-                          Text("Welcome", 
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: AppColors.accentGold,
+                            child: Text(
+                              initial,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          Text("User Name",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          const SizedBox(width: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Welcome", 
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                // ⭐ Display the name from the BLoC
+                                userName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
                         ],
-                      )
-                    ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 35),

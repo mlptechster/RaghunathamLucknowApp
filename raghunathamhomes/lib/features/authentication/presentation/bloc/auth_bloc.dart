@@ -32,6 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignOutRequested>(_onSignOutRequested);
     on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
     on<AuthResendVerificationEmailRequested>(_onResendVerificationEmailRequested);
+    on<AuthCheckEmailVerificationRequested>(_onCheckEmailVerificationRequested);
   }
 
   // --- HANDLERS ---
@@ -61,6 +62,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         user: null,
         isLoading: false,
       ));
+    }
+  }
+  Future<void> _onCheckEmailVerificationRequested(
+      AuthCheckEmailVerificationRequested event, Emitter<AuthState> emit) async {
+    try {
+      final user = await getCurrentUserUseCase.execute();
+      
+      if (user != null) {
+        // User is verified and profile is loaded. Emit the authenticated state.
+        // Crucially, we must reset the messages (errorMessage/successMessage) 
+        // to ensure the state is distinct from the previous 'requiresEmailVerification' state.
+        emit(state.copyWith(
+          status: AuthStatus.authenticated,
+          user: user,
+          // Clear messages to ensure state transition is clean
+          errorMessage: null, 
+          successMessage: 'Welcome home!', // Optional success message on auto-login
+          isLoading: false,
+        ));
+      } 
+      // If user is null, the state remains requiresEmailVerification, and the timer continues.
+    } catch (e) {
+      print('Periodic verification check error: $e'); 
     }
   }
 
