@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:raghunathamhomes/features/authentication/data/models/user_model.dart';
 import 'package:raghunathamhomes/features/authentication/domain/use_cases/forgot_password_use_case.dart';
 import 'package:raghunathamhomes/features/authentication/domain/use_cases/get_current_user_use_case.dart';
 import 'package:raghunathamhomes/features/authentication/domain/use_cases/log_out_use_case.dart';
@@ -43,11 +46,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user = await getCurrentUserUseCase.execute();
       if (user != null) {
-        emit(state.copyWith(
-          status: AuthStatus.authenticated,
-          user: user,
-          isLoading: false,
-        ));
+        final fbUser = FirebaseAuth.instance.currentUser;
+        if (fbUser != null && !fbUser.emailVerified) {
+          emit(state.copyWith(
+            status: AuthStatus.requiresEmailVerification,
+            user: user,
+            isLoading: false,
+          ));
+        } else {
+          emit(state.copyWith(
+            status: AuthStatus.authenticated,
+            user: user,
+            isLoading: false,
+          ));
+        }
       } else {
         emit(state.copyWith(
           status: AuthStatus.unauthenticated,
@@ -56,7 +68,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ));
       }
     } catch (_) {
-      // In case of any unexpected error during check, default to unauthenticated
       emit(state.copyWith(
         status: AuthStatus.unauthenticated,
         user: null,
@@ -64,30 +75,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     }
   }
-  Future<void> _onCheckEmailVerificationRequested(
-      AuthCheckEmailVerificationRequested event, Emitter<AuthState> emit) async {
+   Future<void> _onCheckEmailVerificationRequested(
+      AuthCheckEmailVerificationRequested event,
+      Emitter<AuthState> emit) async {
     try {
-      final user = await getCurrentUserUseCase.execute();
-      
-      if (user != null) {
-        // User is verified and profile is loaded. Emit the authenticated state.
-        // Crucially, we must reset the messages (errorMessage/successMessage) 
-        // to ensure the state is distinct from the previous 'requiresEmailVerification' state.
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser == null) return;
+
+      await fbUser.reload(); // 🔑 refresh user
+
+      if (fbUser.emailVerified) {
+        final doc =
+            await FirebaseFirestore.instance.collection('users').doc(fbUser.uid).get();
+        if (!doc.exists) return;
+
+        final user = UserModel.fromJson(doc.data()!);
+
         emit(state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
-          // Clear messages to ensure state transition is clean
-          errorMessage: null, 
-          successMessage: 'Welcome home!', // Optional success message on auto-login
+          successMessage: 'Email verified! Welcome.',
+          errorMessage: null,
           isLoading: false,
         ));
-      } 
-      // If user is null, the state remains requiresEmailVerification, and the timer continues.
+      } else {
+        emit(state.copyWith(
+          status: AuthStatus.requiresEmailVerification,
+          isLoading: false,
+        ));
+      }
     } catch (e) {
-      print('Periodic verification check error: $e'); 
+      print('[AuthBloc] Email verification check error: $e');
     }
   }
-
   Future<void> _onLoginRequested(
       AuthLoginRequested event, Emitter<AuthState> emit) async {
     emit(state.copyWith(isLoading: true));
@@ -96,31 +116,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
+
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser != null && !fbUser.emailVerified) {
+        emit(state.copyWith(
+          status: AuthStatus.requiresEmailVerification,
+          user: user,
+          errorMessage: 'Email not verified. Please check your inbox.',
+          isLoading: false,
+        ));
+        return;
+      }
+
       emit(state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
         successMessage: 'Login successful!',
+        isLoading: false,
       ));
-    } on AuthException catch (e) {
-      // Handle the specific error thrown by the repository
-      if (e.message.contains('not verified')) {
-        // Special state for verification flow
-        emit(state.copyWith(
-          status: AuthStatus.requiresEmailVerification,
-          errorMessage: e.message,
-          isLoading: false,
-        ));
-      } else {
-        // General login error
-        emit(state.copyWith(
-          status: AuthStatus.unauthenticated,
-          errorMessage: e.message,
-          isLoading: false,
-        ));
-      }
     } catch (e) {
       emit(state.copyWith(
-        errorMessage: 'An unexpected error occurred during login: $e',
+        status: AuthStatus.unauthenticated,
+        errorMessage: e.toString(),
         isLoading: false,
       ));
     }
@@ -136,21 +153,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         phoneNumber: event.phoneNumber,
       );
-      // User is created but must verify email, so we emit the specific status
+
+      // ✅ Do NOT authenticate immediately. Go to verification screen.
       emit(state.copyWith(
         status: AuthStatus.requiresEmailVerification,
         user: user,
-        successMessage: 'Account created! Please check your email to verify.',
-        isLoading: false,
-      ));
-    } on AuthException catch (e) {
-      emit(state.copyWith(
-        errorMessage: e.message,
+        successMessage: 'Account created! Please verify your email.',
         isLoading: false,
       ));
     } catch (e) {
       emit(state.copyWith(
-        errorMessage: 'An unexpected error occurred during sign up: $e',
+        errorMessage: e.toString(),
         isLoading: false,
       ));
     }

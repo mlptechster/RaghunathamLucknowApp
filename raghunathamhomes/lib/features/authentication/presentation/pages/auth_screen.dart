@@ -21,44 +21,49 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   AuthFormType _formType = AuthFormType.login;
+  bool _hasNavigated = false;
 
   void _toggleForm() {
     setState(() {
-      _formType = _formType == AuthFormType.login ? AuthFormType.signUp : AuthFormType.login;
+      _formType =
+          _formType == AuthFormType.login ? AuthFormType.signUp : AuthFormType.login;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // ⭐ IMPORTANT FIX: BlocListener to handle messages and state-based navigation
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar(); 
+        if (_hasNavigated) return;
 
+        // ✅ Navigation
+        if (state.status == AuthStatus.authenticated) {
+          _hasNavigated = true;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
+        }
+
+        if (state.status == AuthStatus.requiresEmailVerification) {
+          _hasNavigated = true;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const VerificationScreen()),
+          );
+        }
+
+        // ✅ Show messages
         if (state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Colors.red.shade700,
-            ),
+            SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red.shade700),
           );
         }
-        
+
         if (state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.successMessage!),
-              backgroundColor: AppColors.accentGoldDark,
-            ),
+            SnackBar(content: Text(state.successMessage!), backgroundColor: AppColors.accentGoldDark),
           );
-        }
-        
-        // Navigation based on BLoC status change
-        if (state.status == AuthStatus.requiresEmailVerification) {
-           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const VerificationScreen()));
-        }
-        if (state.status == AuthStatus.authenticated) {
-           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
         }
       },
       child: Scaffold(
@@ -70,23 +75,15 @@ class _AuthScreenState extends State<AuthScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 60),
-                Image.asset(
-                  "assets/logo2.png", 
-                  height: 120,
-                ),
+                Image.asset("assets/logo2.png", height: 120),
                 const SizedBox(height: 40),
-
                 Container(
                   padding: const EdgeInsets.all(30),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: const [
-                      BoxShadow(
-                        color: AppColors.shadowStrong,
-                        blurRadius: 20,
-                        offset: Offset(0, 8),
-                      ),
+                      BoxShadow(color: AppColors.shadowStrong, blurRadius: 20, offset: Offset(0, 8)),
                     ],
                   ),
                   child: AnimatedSwitcher(
@@ -105,6 +102,7 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 }
+
 
 // ----------------------------------------------------
 // FORM WIDGETS (Unchanged Logic)
@@ -300,12 +298,13 @@ Widget _buildAuthButton(BuildContext context, {required String text, required Vo
   return BlocBuilder<AuthBloc, AuthState>(
     builder: (context, state) {
       return Container(
+        margin: EdgeInsets.all(8),
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha:0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -397,11 +396,12 @@ class VerificationScreen extends StatefulWidget {
 
 class _VerificationScreenState extends State<VerificationScreen> {
   Timer? _timer;
-  
-  // ... (initState and dispose remain the same)
+  bool _hasNavigated = false;
+
   @override
   void initState() {
     super.initState();
+    // 🔁 Check email verification every 3 seconds
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       context.read<AuthBloc>().add(AuthCheckEmailVerificationRequested());
     });
@@ -412,14 +412,27 @@ class _VerificationScreenState extends State<VerificationScreen> {
     _timer?.cancel();
     super.dispose();
   }
-  // ...
 
   @override
   Widget build(BuildContext context) {
-    //  Add a BlocListener here to catch the authenticated status
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // Handle success messages if resending email
+        if (_hasNavigated) return;
+
+        if (state.status == AuthStatus.authenticated) {
+          _hasNavigated = true;
+          _timer?.cancel();
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => const HomePage()));
+        }
+
+        if (state.status == AuthStatus.unauthenticated) {
+          _hasNavigated = true;
+          _timer?.cancel();
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => const AuthScreen()));
+        }
+
         if (state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -428,64 +441,45 @@ class _VerificationScreenState extends State<VerificationScreen> {
             ),
           );
         }
-        
-        // Navigation to Home Page once verified
-        if (state.status == AuthStatus.authenticated) {
-           // IMPORTANT: Cancel the timer before navigating away
-           _timer?.cancel();
-           
-           // Navigate to the HomePage
-           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
-        }
 
-        // Handle Sign Out from VerificationScreen (Return to Login)
-        if (state.status == AuthStatus.unauthenticated) {
-            _timer?.cancel();
-            // Go back to the initial AuthScreen (Login/Signup)
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AuthScreen()));
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: Colors.red.shade700,
+            ),
+          );
         }
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          // ... (AppBar content)
-        ),
         body: Center(
-          // ... (Body content remains the same)
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Please check your inbox!",
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Please check your inbox!",
                   style: goldHeadingStyle.copyWith(fontSize: 24),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  context.read<AuthBloc>().state.user?.email ?? 'A verification link has been sent to your email address.',
-                  style: bodyText.copyWith(color: AppColors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                
-                _buildAuthButton(
-                  context,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              Text(
+                context.read<AuthBloc>().state.user?.email ?? '',
+                style: bodyText.copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              _buildAuthButton(context,
                   text: "Resend Verification Email",
                   onPressed: () {
-                    context.read<AuthBloc>().add(AuthResendVerificationEmailRequested());
+                context.read<AuthBloc>().add(AuthResendVerificationEmailRequested());
+              }),
+              const SizedBox(height: 20),
+              TextButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(AuthSignOutRequested());
                   },
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                   onPressed: () {
-                     context.read<AuthBloc>().add(AuthSignOutRequested()); 
-                   },
-                   child: Text('Return to Login', style: bodyText.copyWith(color: AppColors.textMuted)),
-                ),
-              ],
-            ),
+                  child: Text('Return to Login',
+                      style: bodyText.copyWith(color: AppColors.textMuted))),
+            ],
           ),
         ),
       ),
