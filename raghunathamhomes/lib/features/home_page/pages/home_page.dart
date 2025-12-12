@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
             ),
             if (state.isLoading)
               Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha:0.5),
                 child: Center(
                   child: CircularProgressIndicator(
                     valueColor:

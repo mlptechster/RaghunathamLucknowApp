@@ -107,6 +107,7 @@ Future<UserModel> login({
 }
 
   // --- GET CURRENT USER ---
+  @override
   Future<UserModel?> getCurrentUser() async {
   try {
     final user = _auth.currentUser;
@@ -117,7 +118,7 @@ Future<UserModel> login({
 
     return UserModel.fromJson(doc.data()!);
   } catch (e) {
-    print('[AuthRepo] getCurrentUser error: $e');
+    //print('[AuthRepo] getCurrentUser error: $e');
     return null;
   }
 }

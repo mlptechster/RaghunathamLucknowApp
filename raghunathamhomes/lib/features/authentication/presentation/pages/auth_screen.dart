@@ -344,7 +344,7 @@ Widget _buildAuthButton(BuildContext context, {required String text, required Vo
 
 void _showForgotPasswordDialog(BuildContext context) {
   final TextEditingController emailController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
 
   showDialog(
     context: context,
@@ -354,7 +354,7 @@ void _showForgotPasswordDialog(BuildContext context) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text('Reset Password', style: headingStyle.copyWith(fontSize: 20)),
         content: Form(
-          key: _formKey,
+          key: formKey,
           child: _buildTextFormField(
             controller: emailController, label: 'Enter Email', icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress,
           ),
@@ -370,7 +370,7 @@ void _showForgotPasswordDialog(BuildContext context) {
             dialogContext,
             text: 'SEND LINK',
             onPressed: () {
-              if (_formKey.currentState!.validate()) {
+              if (formKey.currentState!.validate()) {
                 // Dispatch event from the dialog's context
                 context.read<AuthBloc>().add(
                       AuthForgotPasswordRequested(email: emailController.text.trim()),

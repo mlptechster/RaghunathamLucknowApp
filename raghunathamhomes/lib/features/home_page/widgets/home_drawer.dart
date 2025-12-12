@@ -5,6 +5,7 @@ import 'package:raghunathamhomes/constants/app_colors.dart';
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_bloc.dart';
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_event.dart';
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_state.dart';
+import 'package:raghunathamhomes/features/banquest_halls/presentation/pages/banquet_page.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -201,7 +202,9 @@ class HomeDrawer extends StatelessWidget {
                       DrawerItem(
                         title: "Rent a Banquet",
                         icon: Icons.celebration_outlined,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>BanquetPage()));
+                        },
                       ),
                       DrawerItem(
                         title: "PGs & Hotel Rooms",

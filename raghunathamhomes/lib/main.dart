@@ -4,22 +4,24 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:raghunathamhomes/dependency_injection.dart';
 import 'package:raghunathamhomes/dependency_injection.dart' as di;
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_bloc.dart';
+import 'package:raghunathamhomes/features/banquest_halls/presentation/bloc/banquet_booking_bloc.dart';
 import 'package:raghunathamhomes/features/splash/splash_screen.dart';
 
 void main()async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await di.init();
-  runApp(MyApp());
+  runApp(RaghunathamHomes());
 }
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class RaghunathamHomes extends StatelessWidget {
+  const RaghunathamHomes({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<AuthBloc>(),),
+        BlocProvider(create: (_) => sl<BanquetBookingBloc>(),),
       ],
       child: MaterialApp(
         home: SplashScreen(),

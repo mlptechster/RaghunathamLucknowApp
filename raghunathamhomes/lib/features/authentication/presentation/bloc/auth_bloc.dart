@@ -105,7 +105,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ));
       }
     } catch (e) {
-      print('[AuthBloc] Email verification check error: $e');
+      //print('[AuthBloc] Email verification check error: $e');
     }
   }
   Future<void> _onLoginRequested(
