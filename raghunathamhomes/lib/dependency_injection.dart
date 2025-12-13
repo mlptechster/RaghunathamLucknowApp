@@ -12,14 +12,14 @@ import 'package:raghunathamhomes/features/authentication/domain/use_cases/login_
 import 'package:raghunathamhomes/features/authentication/domain/use_cases/resend_verification_email_use_case.dart';
 import 'package:raghunathamhomes/features/authentication/domain/use_cases/sign_up_use_case.dart';
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_bloc.dart';
-import 'package:raghunathamhomes/features/banquest_halls/data/repositories/banquet_booking_repsitory_impl.dart';
-import 'package:raghunathamhomes/features/banquest_halls/domain/repositories/banquet_booking_repository.dart';
-import 'package:raghunathamhomes/features/banquest_halls/domain/use_cases/cancel_booking_usecase.dart';
-import 'package:raghunathamhomes/features/banquest_halls/domain/use_cases/create_banquet_booking_usecase.dart';
-import 'package:raghunathamhomes/features/banquest_halls/domain/use_cases/get_banquet_halls_usecase.dart';
-import 'package:raghunathamhomes/features/banquest_halls/domain/use_cases/get_hall_booking_in_range_usecase.dart';
-import 'package:raghunathamhomes/features/banquest_halls/domain/use_cases/get_user_bookings_usecase.dart';
-import 'package:raghunathamhomes/features/banquest_halls/presentation/bloc/banquet_booking_bloc.dart';
+import 'package:raghunathamhomes/features/banquet_halls/data/repositories/banquet_booking_repsitory_impl.dart';
+import 'package:raghunathamhomes/features/banquet_halls/domain/repositories/banquet_booking_repository.dart';
+import 'package:raghunathamhomes/features/banquet_halls/domain/use_cases/cancel_booking_usecase.dart';
+import 'package:raghunathamhomes/features/banquet_halls/domain/use_cases/create_banquet_booking_usecase.dart';
+import 'package:raghunathamhomes/features/banquet_halls/domain/use_cases/get_banquet_halls_usecase.dart';
+import 'package:raghunathamhomes/features/banquet_halls/domain/use_cases/get_hall_booking_in_range_usecase.dart';
+import 'package:raghunathamhomes/features/banquet_halls/domain/use_cases/get_user_bookings_usecase.dart';
+import 'package:raghunathamhomes/features/banquet_halls/presentation/bloc/banquet_booking_bloc.dart';
 // Note: Ensure all your UseCase, Repository, and BLoC files are imported correctly
 
 final sl = GetIt.instance; // sl stands for Service Locator

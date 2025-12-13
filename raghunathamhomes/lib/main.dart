@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:raghunathamhomes/dependency_injection.dart';
 import 'package:raghunathamhomes/dependency_injection.dart' as di;
 import 'package:raghunathamhomes/features/authentication/presentation/bloc/auth_bloc.dart';
-import 'package:raghunathamhomes/features/banquest_halls/presentation/bloc/banquet_booking_bloc.dart';
+import 'package:raghunathamhomes/features/banquet_halls/presentation/bloc/banquet_booking_bloc.dart';
 import 'package:raghunathamhomes/features/splash/splash_screen.dart';
 
 void main()async{

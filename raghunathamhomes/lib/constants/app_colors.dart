@@ -84,3 +84,54 @@ final TextStyle captionText = GoogleFonts.inter(
   color: AppColors.textMuted,
   fontSize: 13,
 );
+
+/// Primary button text (default)
+final TextStyle buttonTextPrimary = GoogleFonts.playfairDisplay(
+  color: AppColors.textWhite,
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+);
+
+/// Large CTA button
+final TextStyle buttonTextLarge = GoogleFonts.playfairDisplay(
+  color: AppColors.accentGold,
+  fontSize: 18,
+  fontWeight: FontWeight.w700,
+);
+
+/// Small / secondary button
+final TextStyle buttonTextSmall = GoogleFonts.playfairDisplay(
+  color: AppColors.accentGold,
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+);
+
+/// Button text style – Dark (Primary)
+final TextStyle buttonTextDark = GoogleFonts.playfairDisplay(
+  color: AppColors.textPrimary,
+  fontSize: 14,
+  fontWeight: FontWeight.w600,
+  letterSpacing: 0.4,
+);
+
+// for large button text
+final TextStyle buttonLargeTextDark = GoogleFonts.playfairDisplay(
+            color: AppColors.primaryDark,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.4,
+          );
+
+/// Button text style – Dark Secondary
+final TextStyle buttonTextDarkSecondary = GoogleFonts.playfairDisplay(
+  color: AppColors.textSecondary,
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+);
+
+/// Button text style – Dark Muted (disabled / subtle actions)
+final TextStyle buttonTextDarkMuted = GoogleFonts.playfairDisplay(
+  color: AppColors.textMuted,
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+);
